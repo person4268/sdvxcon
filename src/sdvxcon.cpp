@@ -86,8 +86,10 @@ void hid_task() {
     // Update button status
     struct report report;
     report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
-    report.x = quad_get_pos(nullptr);
+    report.x = quad_get_pos(nullptr) * (65536.0f/80.0f);
     report.y = 0;
+    report.rx = 0;
+    report.ry = 0;
 
     // Send the 3 bytes HID report
     if (tud_hid_ready())
@@ -112,14 +114,14 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
 {
-    if (report_id == 2 && report_type == HID_REPORT_TYPE_OUTPUT && buffer[0] == 2 && bufsize >= sizeof(light_data)) //light data
+    if (report_id == 2 && report_type == HID_REPORT_TYPE_OUTPUT && bufsize >= sizeof(light_data)) //light data
     {
         size_t i = 0;
         for (i; i < sizeof(light_data); i++)
         {
-            light_data.raw[i] = buffer[i + 1];
+            light_data.raw[i] = buffer[i];
             if(i == 0) {
-                ws2812.set_color(buffer[i+1], buffer[i+1], buffer[i+1]);
+                ws2812.set_color(buffer[i], buffer[i], buffer[i]);
             }
         }
     }
