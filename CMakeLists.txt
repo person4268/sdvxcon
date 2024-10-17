@@ -41,6 +41,7 @@ pico_sdk_init()
 
 add_executable(sdvxcon
   src/sdvxcon.cpp
+  src/ws2812.cpp
   src/usb_descriptors.c
 )
 

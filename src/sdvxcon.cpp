@@ -28,6 +28,7 @@ union {
     uint8_t raw[12];
 } light_data;
 
+
 void hid_task();
 
 
@@ -46,6 +47,8 @@ int32_t quad_get_pos(bool *clicked) {
     return quadrature_encoder_get_count(pio0, 0);
 }
 
+static WS2812 ws2812;
+
 int main()
 {
     board_init();
@@ -53,10 +56,12 @@ int main()
     stdio_init_all();
     set_sys_clock_hz(CUR_SYS_CLK, true);
     quad_init();
+    ws2812.init();
 
     while(1) {
         hid_task();
         tud_task();
+        ws2812.runws2812();
     }
 }
 
@@ -113,6 +118,9 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
         for (i; i < sizeof(light_data); i++)
         {
             light_data.raw[i] = buffer[i + 1];
+            if(i == 0) {
+                ws2812.set_color(buffer[i+1], buffer[i+1], buffer[i+1]);
+            }
         }
     }
 

@@ -1,8 +1,12 @@
 #include "ws2812.h"
 #include "hardware/pio.h"
+#include "pico/stdlib.h"
+#include "bsp/board_api.h"
 #include "ws2812.pio.h"
 #include "consts.h"
 #include <cmath>
+
+WS2812::WS2812() {}
 
 void WS2812::init() {
     PIO pio = WS2812_PIO;
@@ -17,12 +21,14 @@ static inline void put_pixel(uint32_t pixel_grb) {
 }
 
 void WS2812::runws2812() {
-  for(int i = 0; i < 256; i++) {
-    uint32_t color = hsv_to_urgb(i, 1, 1);
-    for (int hue = 0; hue < 360; hue = hue + 1) {
-      put_pixel(hsv_to_urgb(hue, 1, 0.5));
-    }
-  }
+    if(board_millis() % 10 == 0)
+        put_pixel(urgb_u32(cur_r, cur_g, cur_b));
+}
+
+void WS2812::set_color(uint8_t r, uint8_t g, uint8_t b) {
+    cur_r = r;
+    cur_g = g;
+    cur_b = b;
 }
 
 uint32_t WS2812::hsv_to_urgb(uint32_t hue, float s, float v) {

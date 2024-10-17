@@ -17,6 +17,11 @@
         HID_REPORT_COUNT(12),                              \
         HID_REPORT_SIZE(1),                                \
         HID_INPUT(HID_DATA | HID_VARIABLE | HID_ABSOLUTE), \
+        /* now 4 constant bits for padding */                \
+        HID_REPORT_COUNT(1),                              \
+        HID_REPORT_SIZE(4),                                \
+        HID_INPUT(HID_CONSTANT),                           \
+        /* now the 2 joysticks */                              \
         HID_USAGE_PAGE(HID_USAGE_PAGE_DESKTOP),            \
         HID_LOGICAL_MIN(0x00),                             \
         HID_LOGICAL_MAX_N(0xffff, 2),                      \
