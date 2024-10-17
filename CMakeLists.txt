@@ -9,13 +9,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 
-if(EXISTS ${USERHOME}/.pico-sdk)
-# == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
     set(USERHOME $ENV{USERPROFILE})
 else()
     set(USERHOME $ENV{HOME})
 endif()
+
+if(EXISTS ${USERHOME}/.pico-sdk)
+# == DO NEVER EDIT THE NEXT LINES for Raspberry Pi Pico VS Code Extension to work ==
+
 set(sdkVersion 2.0.0)
 set(toolchainVersion 13_2_Rel1)
 set(picotoolVersion 2.0.0)
@@ -51,7 +53,7 @@ pico_generate_pio_header(sdvxcon ${CMAKE_CURRENT_LIST_DIR}/src/quadrature.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(sdvxcon 1)
-pico_enable_stdio_usb(sdvxcon 0)
+pico_enable_stdio_usb(sdvxcon 1)
 
 target_compile_options(sdvxcon PUBLIC -Wno-narrowing)
 
