@@ -51,7 +51,7 @@ pico_generate_pio_header(sdvxcon ${CMAKE_CURRENT_LIST_DIR}/src/quadrature.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(sdvxcon 1)
-pico_enable_stdio_usb(sdvxcon 1)
+pico_enable_stdio_usb(sdvxcon 0)
 
 target_compile_options(sdvxcon PUBLIC -Wno-narrowing)
 

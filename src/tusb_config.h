@@ -31,8 +31,6 @@
  extern "C" {
 #endif
 
-#include "pico/stdio_usb.h"
-
 // Enable Device stack
 #define CFG_TUD_ENABLED       1
 
@@ -58,14 +56,8 @@
 #define CFG_TUD_CDC_RX_BUFSIZE  (256)
 #define CFG_TUD_CDC_TX_BUFSIZE  (256)
 
-// We use a vendor specific interface but with our own driver
-// Vendor driver only used for Microsoft OS 2.0 descriptor
-#if !PICO_STDIO_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR
 #define CFG_TUD_HID            (1) /* for gs usb */
-#else
-#define CFG_TUD_HID            (2)
-#error "yeah uh this aint gonna work"
-#endif
+
 
 
 #define CFG_TUD_HID_BUFSIZE 32

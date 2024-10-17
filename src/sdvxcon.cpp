@@ -14,8 +14,10 @@
 
 struct report {
     uint16_t buttons;
-    int8_t x;
-    int8_t y;
+    int16_t x;
+    int16_t y;
+    int16_t rx;
+    int16_t ry;
 } __attribute__((packed));
 
 
@@ -29,26 +31,19 @@ union {
 void hid_task();
 
 
-void quadrature_testing_task() {
+void quad_init() {
     gpio_init(8);
     gpio_set_pulls(8, true, false);
-
-    int pos = 0;
-    bool clicked = false;
     pio_add_program(pio0, &quadrature_encoder_program);
     // pins 4 and 5
     quadrature_encoder_program_init(pio0, 0, 4, 0);
-    while(1) {
-        int new_pos = quadrature_encoder_get_count(pio0, 0);
-        int new_clicked = !gpio_get(8);
+}
 
-        if(new_pos != pos || new_clicked != clicked) {
-            pos = new_pos;
-            clicked = new_clicked;
-            printf("Position: %d Clicked: %d\n", pos, clicked);
-        }
-
+int32_t quad_get_pos(bool *clicked) {
+    if(clicked) {
+        *clicked = !gpio_get(8);
     }
+    return quadrature_encoder_get_count(pio0, 0);
 }
 
 int main()
@@ -57,6 +52,7 @@ int main()
     tusb_init();
     stdio_init_all();
     set_sys_clock_hz(CUR_SYS_CLK, true);
+    quad_init();
 
     while(1) {
         hid_task();
@@ -85,8 +81,8 @@ void hid_task() {
     // Update button status
     struct report report;
     report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
-    report.x = board_millis() % 255;
-    report.y = board_millis() % 255;
+    report.x = quad_get_pos(nullptr);
+    report.y = 0;
 
     // Send the 3 bytes HID report
     if (tud_hid_ready())
@@ -122,4 +118,21 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
     // echo back anything we received from host
     tud_hid_report(0, buffer, bufsize);
+}
+
+// Invoked when device is mounted
+void tud_mount_cb(void) {}
+
+// Invoked when device is unmounted
+void tud_umount_cb(void) {}
+
+// Invoked when usb bus is suspended
+// remote_wakeup_en : if host allow us  to perform remote wakeup
+// Within 7ms, device must draw an average of current less than 2.5 mA from bus
+void tud_suspend_cb(bool remote_wakeup_en) {
+    (void)remote_wakeup_en;
+}
+
+// Invoked when usb bus is resumed
+void tud_resume_cb(void) {
 }
