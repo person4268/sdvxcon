@@ -13,10 +13,10 @@
 
 
 struct report {
-    uint8_t buttons;
-    uint8_t x;
-    uint8_t y;
-};
+    uint16_t buttons;
+    int8_t x;
+    int8_t y;
+} __attribute__((packed));
 
 
 union {
@@ -83,10 +83,10 @@ void hid_task() {
     }
 
     // Update button status
-    report report = {};
+    struct report report;
     report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
-    report.x = 10;
-    report.y = 20;
+    report.x = board_millis() % 255;
+    report.y = board_millis() % 255;
 
     // Send the 3 bytes HID report
     if (tud_hid_ready())

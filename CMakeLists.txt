@@ -55,7 +55,7 @@ pico_enable_stdio_usb(sdvxcon 1)
 
 target_compile_options(sdvxcon PUBLIC -Wno-narrowing)
 
-target_compile_definitions(sdvxcon PUBLIC PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=1 PICO_STDIO_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR=0)
+target_compile_definitions(sdvxcon PUBLIC PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE=0 PICO_STDIO_USB_RESET_INTERFACE_SUPPORT_MS_OS_20_DESCRIPTOR=0)
 
 # Add the standard include files to the build
 target_include_directories(sdvxcon PRIVATE

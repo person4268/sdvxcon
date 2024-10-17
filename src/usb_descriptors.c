@@ -54,9 +54,9 @@
 
 #define TUD_RPI_RESET_DESC_LEN  9
 #if !PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
-#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_HID_DESC_LEN)
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN)
 #else
-#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_RPI_RESET_DESC_LEN + TUD_HID_DESC_LEN)
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_RPI_RESET_DESC_LEN + TUD_HID_DESC_LEN)
 #endif
 #if !PICO_STDIO_USB_DEVICE_SELF_POWERED
 #define USBD_CONFIGURATION_DESCRIPTOR_ATTRIBUTE (0)
@@ -66,28 +66,21 @@
 #define USBD_MAX_POWER_MA (1)
 #endif
 
-#define USBD_ITF_CDC       (0) // needs 2 interfaces
 #if !PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
-#define USBD_ITF_MAX       (3)
-#define USBD_ITF_HID    (2)
+#define USBD_ITF_MAX       (1)
+#define USBD_ITF_HID    (0)
 #else
-#define USBD_ITF_RPI_RESET (2)
-#define USBD_ITF_HID    (3)
-#define USBD_ITF_MAX       (4)
+#define USBD_ITF_RPI_RESET (1)
+#define USBD_ITF_HID    (0)
+#define USBD_ITF_MAX       (2)
 #endif
-
-#define USBD_CDC_EP_CMD (0x82)
-#define USBD_CDC_EP_OUT (0x03)
-#define USBD_CDC_EP_IN (0x83)
-#define USBD_CDC_CMD_MAX_SIZE (8)
-#define USBD_CDC_IN_OUT_MAX_SIZE (64)
 
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
 #define USBD_STR_PRODUCT (0x02)
 #define USBD_STR_SERIAL (0x03)
-#define USBD_STR_CDC (0x04)
-#define USBD_STR_RPI_RESET (0x05)
+#define USBD_STR_RPI_RESET (0x04)
+#define USBD_STR_HID (0x05)
 
 
 // Gamepad Report Descriptor Template
@@ -100,10 +93,10 @@
         __VA_ARGS__                                        \
             HID_USAGE_PAGE(HID_USAGE_PAGE_BUTTON),         \
         HID_USAGE_MIN(1),                                  \
-        HID_USAGE_MAX(12),                                 \
+        HID_USAGE_MAX(16),                                 \
         HID_LOGICAL_MIN(0),                                \
         HID_LOGICAL_MAX(1),                                \
-        HID_REPORT_COUNT(12),                              \
+        HID_REPORT_COUNT(16),                              \
         HID_REPORT_SIZE(1),                                \
         HID_INPUT(HID_DATA | HID_VARIABLE | HID_ABSOLUTE), \
         HID_USAGE_PAGE(HID_USAGE_PAGE_DESKTOP),            \
@@ -121,7 +114,7 @@
         HID_USAGE(0x00),                                        \
         HID_COLLECTION(HID_COLLECTION_APPLICATION),             \
         __VA_ARGS__                                             \
-            HID_REPORT_COUNT(12), /*12 button lights */ \
+            HID_REPORT_COUNT(16), /*12 button lights */ \
         HID_REPORT_SIZE(8),                                     \
         HID_LOGICAL_MIN(0x00),                                  \
         HID_LOGICAL_MAX_N(0x00ff, 2),                           \
@@ -140,7 +133,7 @@ static const tusb_desc_device_t usbd_desc_device = {
     .bLength = sizeof(tusb_desc_device_t),
     .bDescriptorType = TUSB_DESC_DEVICE,
     .bcdUSB = 0x0210,
-    .bDeviceClass = TUSB_CLASS_MISC,
+    .bDeviceClass = TUSB_CLASS_HID,
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,
     .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
@@ -155,7 +148,7 @@ static const tusb_desc_device_t usbd_desc_device = {
 
 uint8_t const desc_hid_report[] = {
     GAMECON_REPORT_DESC_GAMEPAD(HID_REPORT_ID(1)),
-    GAMECON_REPORT_DESC_LIGHTS(HID_REPORT_ID(2)),
+    // GAMECON_REPORT_DESC_LIGHTS(HID_REPORT_ID(2)),
 };
 
 // Invoked when received GET HID REPORT DESCRIPTOR
@@ -178,14 +171,11 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
     TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_MAX, USBD_STR_0, USBD_DESC_LEN,
         USBD_CONFIGURATION_DESCRIPTOR_ATTRIBUTE, USBD_MAX_POWER_MA),
 
-    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
-        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
-
 #if PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
     TUD_RPI_RESET_DESCRIPTOR(USBD_ITF_RPI_RESET, USBD_STR_RPI_RESET),
 #endif
 
-    TUD_HID_DESCRIPTOR(USBD_ITF_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, CFG_TUD_HID_BUFSIZE, 1)
+    TUD_HID_DESCRIPTOR(USBD_ITF_HID, USBD_STR_HID, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, CFG_TUD_HID_BUFSIZE, 1)
 };
 
 static char usbd_serial_str[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
@@ -194,10 +184,10 @@ static const char *const usbd_desc_str[] = {
     [USBD_STR_MANUF] = USBD_MANUFACTURER,
     [USBD_STR_PRODUCT] = USBD_PRODUCT,
     [USBD_STR_SERIAL] = usbd_serial_str,
-    [USBD_STR_CDC] = "Board CDC",
 #if PICO_STDIO_USB_ENABLE_RESET_VIA_VENDOR_INTERFACE
     [USBD_STR_RPI_RESET] = "Reset",
 #endif
+    [USBD_STR_HID] = "Game Controller",
 };
 
 const uint8_t *tud_descriptor_device_cb(void) {
