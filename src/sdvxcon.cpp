@@ -38,13 +38,17 @@ void quad_init() {
     pio_add_program(pio0, &quadrature_encoder_program);
     // pins 4 and 5
     quadrature_encoder_program_init(pio0, 0, 4, 0);
+    // pins 2 and 3
+    quadrature_encoder_program_init(pio0, 1, 2, 0);
+
 }
 
-int32_t quad_get_pos(bool *clicked) {
-    if(clicked) {
-        *clicked = !gpio_get(8);
-    }
+int32_t quad2_get_pos() {
     return quadrature_encoder_get_count(pio0, 0);
+}
+
+int32_t quad1_get_pos() {
+    return quadrature_encoder_get_count(pio0, 1);
 }
 
 static WS2812 ws2812;
@@ -86,7 +90,7 @@ void hid_task() {
     // Update button status
     struct report report;
     report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
-    report.x = quad_get_pos(nullptr) * (65536.0f/80.0f);
+    report.x = quad2_get_pos() * (65536.0f/80.0f);
     report.y = 0;
     report.rx = 0;
     report.ry = 0;
