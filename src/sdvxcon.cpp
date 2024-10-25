@@ -33,25 +33,47 @@ void hid_task();
 
 
 void quad_init() {
-    gpio_init(8);
-    gpio_set_pulls(8, true, false);
+    // gpio_init(8);
+    // gpio_set_pulls(8, true, false);
     pio_add_program(pio0, &quadrature_encoder_program);
+    pio_add_program(pio1, &quadrature_encoder_program);
     // pins 4 and 5
-    quadrature_encoder_program_init(pio0, 0, 4, 0);
+    quadrature_encoder_program_init(pio1, 0, 4, 0);
     // pins 2 and 3
-    quadrature_encoder_program_init(pio0, 1, 2, 0);
+    quadrature_encoder_program_init(pio0, 0, 2, 0);
 
 }
 
 int32_t quad2_get_pos() {
-    return quadrature_encoder_get_count(pio0, 0);
+    return quadrature_encoder_get_count(pio1, 0);
 }
 
 int32_t quad1_get_pos() {
-    return quadrature_encoder_get_count(pio0, 1);
+    return quadrature_encoder_get_count(pio0, 0);
 }
 
 static WS2812 ws2812;
+
+union btn_states {
+    struct button_states {
+        uint16_t fx_l : 1; // 18
+        uint16_t fx_r : 1; // 15
+        uint16_t btn_a : 1; // 17
+        uint16_t btn_b : 1; // 16
+        uint16_t btn_c : 1; // 13
+        uint16_t btn_d : 1; // 14
+        uint16_t aux_1 : 1; // 19
+        uint16_t aux_2 : 1; // 20
+        uint16_t aux_3 : 1; // 21
+        uint16_t aux_4 : 1; // 12
+        uint16_t aux_5 : 1; // 11
+        uint16_t aux_6 : 1; // 10
+        uint16_t padding : 4;
+    } __attribute__((packed)) states;
+    uint16_t raw;
+};
+// all active low
+static int btns[] = {18, 15, 17, 16, 13, 14, 19, 20, 21, 10, 11, 12};
 
 int main()
 {
@@ -61,6 +83,13 @@ int main()
     set_sys_clock_hz(CUR_SYS_CLK, true);
     quad_init();
     ws2812.init();
+
+    for (int i = 0; i < sizeof(btns) / sizeof(int); i++)
+    {
+        gpio_init(btns[i]);
+        gpio_set_dir(btns[i], GPIO_IN);
+        gpio_pull_up(btns[i]);
+    }
 
     while(1) {
         hid_task();
@@ -89,9 +118,24 @@ void hid_task() {
 
     // Update button status
     struct report report;
-    report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
-    report.x = quad2_get_pos() * (65536.0f/80.0f);
-    report.y = 0;
+    // report.buttons = ((board_millis() / 1000) % 2) << ((board_millis() / 2000) % 12);
+    btn_states states = {};
+    states.states.fx_l = !gpio_get(18);
+    states.states.fx_r = !gpio_get(15);
+    states.states.btn_a = !gpio_get(17);
+    states.states.btn_b = !gpio_get(16);
+    states.states.btn_c = !gpio_get(13);
+    states.states.btn_d = !gpio_get(14);
+    states.states.aux_1 = !gpio_get(19);
+    states.states.aux_2 = !gpio_get(20);
+    states.states.aux_3 = !gpio_get(21);
+    states.states.aux_4 = !gpio_get(12);
+    states.states.aux_5 = !gpio_get(11);
+    states.states.aux_6 = !gpio_get(10);
+    report.buttons = states.raw;
+
+    report.x = quad1_get_pos() * (65536.0f/80.0f);
+    report.y = quad2_get_pos() * (65536.0f/80.0f);
     report.rx = 0;
     report.ry = 0;
 

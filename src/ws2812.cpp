@@ -12,7 +12,7 @@ void WS2812::init() {
     PIO pio = WS2812_PIO;
     uint sm = 1;
     uint offset = pio_add_program(pio, &ws2812_program);
-    uint pin = 16;
+    uint pin = 22;
     ws2812_program_init(pio, sm, offset, pin, 800000, false);
 }
 
