@@ -23,13 +23,14 @@ struct report {
 
 union {
     struct {
-        uint8_t buttons[12];
+        uint8_t strip[18];
     } lights;
-    uint8_t raw[12];
+    uint8_t raw[18];
 } light_data;
 
 
 void hid_task();
+void set_leds_task();
 
 
 void quad_init() {
@@ -94,6 +95,7 @@ int main()
     while(1) {
         hid_task();
         tud_task();
+        set_leds_task();
         ws2812.runws2812();
     }
 }
@@ -144,6 +146,28 @@ void hid_task() {
         tud_hid_report(1, &report, sizeof(report));
 }
 
+void set_leds_task() {
+    if(board_millis() % 5 == 0) return;
+    ws2812.set_bfl(0, light_data.lights.strip[0]);
+    ws2812.set_bfl(1, light_data.lights.strip[1]);
+    ws2812.set_bfl(2, light_data.lights.strip[2]);
+    ws2812.set_bfr(0, light_data.lights.strip[3]);
+    ws2812.set_bfr(1, light_data.lights.strip[4]);
+    ws2812.set_bfr(2, light_data.lights.strip[5]);
+    ws2812.set_sl(0, light_data.lights.strip[6]);
+    ws2812.set_sl(1, light_data.lights.strip[7]);
+    ws2812.set_sl(2, light_data.lights.strip[8]);
+    ws2812.set_sr(0, light_data.lights.strip[9]);
+    ws2812.set_sr(1, light_data.lights.strip[10]);
+    ws2812.set_sr(2, light_data.lights.strip[11]);
+    ws2812.set_bl(0, light_data.lights.strip[12]);
+    ws2812.set_bl(1, light_data.lights.strip[13]);
+    ws2812.set_bl(2, light_data.lights.strip[14]);
+    ws2812.set_br(0, light_data.lights.strip[15]);
+    ws2812.set_br(1, light_data.lights.strip[16]);
+    ws2812.set_br(2, light_data.lights.strip[17]);
+}
+
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
 // Return zero will cause the stack to STALL request
@@ -168,9 +192,6 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
         for (i; i < sizeof(light_data); i++)
         {
             light_data.raw[i] = buffer[i];
-            if(i == 0) {
-                ws2812.set_color(buffer[i], buffer[i], buffer[i]);
-            }
         }
     }
 

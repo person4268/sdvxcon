@@ -39,13 +39,13 @@
         HID_USAGE(0x00),                                        \
         HID_COLLECTION(HID_COLLECTION_APPLICATION),             \
         __VA_ARGS__                                             \
-            HID_REPORT_COUNT(12), /*12 button lights */ \
+            HID_REPORT_COUNT(18), /*12 button lights */ \
         HID_REPORT_SIZE(8),                                     \
         HID_LOGICAL_MIN(0x00),                                  \
         HID_LOGICAL_MAX_N(0x00ff, 2),                           \
         HID_USAGE_PAGE(HID_USAGE_PAGE_ORDINAL),                 \
         HID_USAGE_MIN(1),                                       \
-        HID_USAGE_MAX(12),                                      \
+        HID_USAGE_MAX(18),                                      \
         HID_OUTPUT(HID_DATA | HID_VARIABLE | HID_ABSOLUTE),     \
         HID_USAGE_MIN(1),                                       \
         HID_USAGE_MAX(1),                                       \

@@ -6,6 +6,11 @@
 #include "consts.h"
 #include <cmath>
 
+// order is 8 on the bottom front left 8, side left 7, back left 11, back right 11, side right 5, front right 8
+#define STRIP_LENGTH (8 + 7 + 11 + 11 + 5 + 8)
+
+uint8_t buf[STRIP_LENGTH * 3] = {0};
+
 WS2812::WS2812() {}
 
 void WS2812::init() {
@@ -21,14 +26,59 @@ static inline void put_pixel(uint32_t pixel_grb) {
 }
 
 void WS2812::runws2812() {
-    if(board_millis() % 10 == 0)
-        put_pixel(urgb_u32(cur_r, cur_g, cur_b));
+    if(board_millis() % 5 == 0) {
+        for (int i = 0; i < STRIP_LENGTH; i++) {
+            uint32_t r = buf[i * 3];
+            uint32_t g = buf[i * 3 + 1];
+            uint32_t b = buf[i * 3 + 2];
+
+            r = pow(r / 255.0, 2.2) * 255;
+            g = pow(g / 255.0, 2.2) * 255;
+            b = pow(b / 255.0, 2.2) * 255;
+
+            r *= 255;
+            r /= 255;
+
+            g *= 224;
+            g /= 255;
+
+            b *= 140;
+            b /= 255;
+
+            put_pixel(urgb_u32(r, g, b));
+        }
+    }
 }
 
-void WS2812::set_color(uint8_t r, uint8_t g, uint8_t b) {
-    cur_r = r;
-    cur_g = g;
-    cur_b = b;
+/* 0 == r, 1 == g, 2 == b */
+static inline void set_buf_range(uint8_t start, uint8_t end, uint8_t color_offset, uint8_t color) {
+    for (int i = start; i < end; i++) {
+        buf[i * 3 + color_offset] = color;
+    }
+}
+
+void WS2812::set_bfl(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0, 0 + 8, color_offset, brightness);
+}
+
+void WS2812::set_sl(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0 + 8, 0 + 8 + 7, color_offset, brightness);
+}
+
+void WS2812::set_bl(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0 + 8 + 7, 0 + 8 + 7 + 11, color_offset, brightness);
+}
+
+void WS2812::set_br(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0 + 8 + 7 + 11, 0 + 8 + 7 + 11 + 11, color_offset, brightness);
+}
+
+void WS2812::set_sr(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0 + 8 + 7 + 11 + 11, 0 + 8 + 7 + 11 + 11 + 5, color_offset, brightness);
+}
+
+void WS2812::set_bfr(uint8_t color_offset, uint8_t brightness) {
+    set_buf_range(0 + 8 + 7 + 11 + 11 + 5, 0 + 8 + 7 + 11 + 11 + 5 + 8, color_offset, brightness);
 }
 
 uint32_t WS2812::hsv_to_urgb(uint32_t hue, float s, float v) {
