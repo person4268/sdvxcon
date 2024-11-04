@@ -32,53 +32,50 @@ void WS2812::runws2812() {
             uint32_t g = buf[i * 3 + 1];
             uint32_t b = buf[i * 3 + 2];
 
-            r = pow(r / 255.0, 2.2) * 255;
-            g = pow(g / 255.0, 2.2) * 255;
-            b = pow(b / 255.0, 2.2) * 255;
-
-            r *= 255;
-            r /= 255;
-
-            g *= 224;
-            g /= 255;
-
-            b *= 140;
-            b /= 255;
-
             put_pixel(urgb_u32(r, g, b));
         }
     }
 }
 
 /* 0 == r, 1 == g, 2 == b */
-static inline void set_buf_range(uint8_t start, uint8_t end, uint8_t color_offset, uint8_t color) {
+static inline void set_buf_range(uint8_t start, uint8_t end, uint16_t r, uint16_t g, uint16_t b) {
+    r = pow(r / 255.0, 2.2) * 255;
+    g = pow(g / 255.0, 2.2) * 255;
+    b = pow(b / 255.0, 2.2) * 255;
+
+    // r *= (255 / 255);
+    g *= (224.0/255.0);
+    b *= (140.0/255.0);
+
     for (int i = start; i < end; i++) {
-        buf[i * 3 + color_offset] = color;
+        buf[i * 3 + 0] = r;
+        buf[i * 3 + 1] = g;
+        buf[i * 3 + 2] = b;
     }
 }
 
-void WS2812::set_bfl(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0, 0 + 8, color_offset, brightness);
+void WS2812::set_bfl(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0, 0 + 8, r, g, b);
 }
 
-void WS2812::set_sl(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0 + 8, 0 + 8 + 7, color_offset, brightness);
+void WS2812::set_sl(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0 + 8, 0 + 8 + 7, r, g, b);
 }
 
-void WS2812::set_bl(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0 + 8 + 7, 0 + 8 + 7 + 11, color_offset, brightness);
+void WS2812::set_bl(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0 + 8 + 7, 0 + 8 + 7 + 11, r, g, b);
 }
 
-void WS2812::set_br(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0 + 8 + 7 + 11, 0 + 8 + 7 + 11 + 11, color_offset, brightness);
+void WS2812::set_br(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0 + 8 + 7 + 11, 0 + 8 + 7 + 11 + 11, r, g, b);
 }
 
-void WS2812::set_sr(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0 + 8 + 7 + 11 + 11, 0 + 8 + 7 + 11 + 11 + 5, color_offset, brightness);
+void WS2812::set_sr(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0 + 8 + 7 + 11 + 11, 0 + 8 + 7 + 11 + 11 + 5, r, g, b);
 }
 
-void WS2812::set_bfr(uint8_t color_offset, uint8_t brightness) {
-    set_buf_range(0 + 8 + 7 + 11 + 11 + 5, 0 + 8 + 7 + 11 + 11 + 5 + 8, color_offset, brightness);
+void WS2812::set_bfr(uint8_t r, uint8_t g, uint8_t b) {
+    set_buf_range(0 + 8 + 7 + 11 + 11 + 5, 0 + 8 + 7 + 11 + 11 + 5 + 8, r, g, b);
 }
 
 uint32_t WS2812::hsv_to_urgb(uint32_t hue, float s, float v) {

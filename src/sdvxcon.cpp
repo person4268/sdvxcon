@@ -148,24 +148,12 @@ void hid_task() {
 
 void set_leds_task() {
     if(board_millis() % 5 == 0) return;
-    ws2812.set_bfl(0, light_data.lights.strip[0]);
-    ws2812.set_bfl(1, light_data.lights.strip[1]);
-    ws2812.set_bfl(2, light_data.lights.strip[2]);
-    ws2812.set_bfr(0, light_data.lights.strip[3]);
-    ws2812.set_bfr(1, light_data.lights.strip[4]);
-    ws2812.set_bfr(2, light_data.lights.strip[5]);
-    ws2812.set_sl(0, light_data.lights.strip[6]);
-    ws2812.set_sl(1, light_data.lights.strip[7]);
-    ws2812.set_sl(2, light_data.lights.strip[8]);
-    ws2812.set_sr(0, light_data.lights.strip[9]);
-    ws2812.set_sr(1, light_data.lights.strip[10]);
-    ws2812.set_sr(2, light_data.lights.strip[11]);
-    ws2812.set_bl(0, light_data.lights.strip[12]);
-    ws2812.set_bl(1, light_data.lights.strip[13]);
-    ws2812.set_bl(2, light_data.lights.strip[14]);
-    ws2812.set_br(0, light_data.lights.strip[15]);
-    ws2812.set_br(1, light_data.lights.strip[16]);
-    ws2812.set_br(2, light_data.lights.strip[17]);
+    ws2812.set_bfl(light_data.lights.strip[0], light_data.lights.strip[1], light_data.lights.strip[2]);
+    ws2812.set_bfr(light_data.lights.strip[3], light_data.lights.strip[4], light_data.lights.strip[5]);
+    ws2812.set_sl(light_data.lights.strip[6], light_data.lights.strip[7], light_data.lights.strip[8]);
+    ws2812.set_sr(light_data.lights.strip[9], light_data.lights.strip[10], light_data.lights.strip[11]);
+    ws2812.set_bl(light_data.lights.strip[12], light_data.lights.strip[13], light_data.lights.strip[14]);
+    ws2812.set_br(light_data.lights.strip[15], light_data.lights.strip[16], light_data.lights.strip[17]);
 }
 
 // Invoked when received GET_REPORT control request
